@@ -1,0 +1,19 @@
+ABOUT
+Backup multiple locations to either a local secondary disk or a remote server using rsync (+ logging and configurability)
+
+DEPENDENCIES
+made for common linux distros (assumes some binaries in PATH)
+	rsync
+	whoami
+	find
+	nice
+	ionice
+	mount
+currently has some ugly depencies 
+	notify-send  (notify with nice popups - used in ubuntu)
+	tune2fs (get mount counter)
+	e2fsck (is specific to ext partition, if you use something else: fix it, make a pull request :)
+
+GETTING STARTED
+copy config.json-dist to config.json. adjust it to your system (be carefull, you might overwrite data).
+add a cron job calling rsyn-php hourly (or less frequent).

@@ -1,0 +1,76 @@
+#!/usr/bin/php
+<?php
+require_once 'SystemWrapper.php';
+require_once 'LocalRsyncBackup.php';
+require_once 'RemoteRsyncBackup.php';
+
+$dir = __DIR__.DIRECTORY_SEPARATOR;
+
+$config = json_decode(file_get_contents('config.json'));
+
+$logFolder = $config->logFolder;
+$backupBase = new SystemWrapper($logFolder);
+$backupBase->notify('starting backup');
+
+foreach($config->preCommands as $cmd){
+    $backupBase->exec($cmd);
+}
+
+#putenv('SHELL=/bin/bash');
+$localBackuper = new LocalRsyncBackup($backupBase);
+
+foreach($config->local as $local){
+    $t1 = time();
+    $localBackuper->notify('starting backup of '.$local->from.' to local secondary disc.');
+    $ret2 = $localBackuper->backup($local->from, $local->to, $local->toDevice, $dir.$local->excludeList);
+    if ($ret2) {
+        $tdiff = time() - $t1;
+        $localBackuper->log("backup complete (took $tdiff sec)");
+        $localBackuper->notify('backup of '.$local->from.' to local secondary disc successfull');
+    } else {
+        $localBackuper->notify('backup of '.$local->from.' failed');
+    }
+}
+
+#putenv('SHELL=/bin/bash');
+$remoteBackuper = new RemoteRsyncBackuper($backupBase);
+
+$home = true;
+if($config->onlyHome){
+    $MAC = $config->homeMAC; //mac of your router at home
+    $curMAC = exec($dir.'gateway-mac.sh');
+    $home = $curMAC == $MAC;
+}
+
+if($home){ 
+    $remoteBackuper->log('at home');
+    $lastBackupDateFile = $dir.'last-remote-sync';
+    if(file_exists($lastBackupDateFile)){
+        $lastBackup = file_get_contents($lastBackupDateFile);
+    } else {
+        $lastBackup = '01-01-2000'; //more than one day ago
+    }
+    $remoteBackuper->log("last Backup was $lastBackup");
+    if(
+        $lastBackup != date('d-m-Y') && // the last backup is not from today
+     !( (intval(date("H")) <= 6 && $lastBackup == date("d-m-Y", strtotime('-1 day',time())))) //its not 0-6 am, and the last backup is from yesterday
+     ){ 
+        foreach($config->remote as $remote){
+            $remoteBackuper->notify('starting backup of '.$remote->from.' to remote rsync');
+            $t1 = time();
+            $ret = $remoteBackuper->backup($remote->from, $remote->to, $dir.$remote->excludeList);
+            if ($ret) {
+                $tdiff = time() - $t1;
+                $remoteBackuper->log("backup complete (took $tdiff sec)");
+                $localBackuper->notify('backup of '.$remote->from.' to remote rsync successfull');
+                file_put_contents($dir.'last-ftp-upload', date('d-m-Y'));
+            } else $remoteBackuper->log('backup to remote rsync server failed');
+        }    
+    } else {
+        $remoteBackuper->log('already backupped today');
+    }
+} else {
+    $remoteBackuper->log('not at home');
+}
+
+$backupBase->cleanUp();

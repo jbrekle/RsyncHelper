@@ -1,0 +1,38 @@
+{
+    "logFolder": "/var/log/rsync-backup/",    
+
+
+    "preCommands": [nbproject
+        "cp -r /var/lib/mysql /home/user/backups",
+        "cp /etc/fstab /home/user/backups",
+        "/home/user/apps/rsync-backup/dpkg-origins > /home/user/backups/packages.lst"
+    ],
+
+    "local": [
+        {
+            "from":   "/home",
+            "to":     "/mnt/home-backup",
+            "toDevice": "/dev/sdb5",
+            "excludeList": "home-exclude.lst",
+            "remount": true
+        },
+        {
+            "from":   "/",
+            "to":     "/mnt/root-backup",
+            "toDevice": "/dev/sdb1",
+            "excludeList": "root-exclude.lst",
+            "remount": true
+        }
+    ],
+
+    "onlyHome": true,
+    "homeMAC": "00:00:00:00:00:00",
+
+    "remote": [
+        {
+            "from": "/home",
+            "to": "user@192.168.1.103:/backup/user",
+            "excludeList": "home-exclude.lst"
+        }
+    ]
+}

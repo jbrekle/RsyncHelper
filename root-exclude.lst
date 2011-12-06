@@ -1,0 +1,19 @@
+# Include
++ /dev/console
++ /dev/initctl
++ /dev/null
++ /dev/zero
+
+# Exclude
+- /dev/*
+- /proc/*
+- /sys/*
+- /tmp/*
+- lost+found/*
+- /media/*
+
+#this is where the backup destination folder is mounted, prevent recursion
+- /mnt/*
+
+#will be done seperatly
+- /home/*
