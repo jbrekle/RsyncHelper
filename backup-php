@@ -63,7 +63,7 @@ if($home){
                 $tdiff = time() - $t1;
                 $remoteBackuper->log("backup complete (took $tdiff sec)");
                 $localBackuper->notify('backup of '.$remote->from.' to remote rsync successfull');
-                file_put_contents($dir.'last-ftp-upload', date('d-m-Y'));
+                file_put_contents($lastBackupDateFile, date('d-m-Y'));
             } else $remoteBackuper->log('backup to remote rsync server failed');
         }    
     } else {
