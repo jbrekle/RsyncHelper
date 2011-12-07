@@ -5,7 +5,7 @@ if the primary disk fails, the second disk should be uptodate, if the computer g
 this script uses rsync and wraps some logic, logging and convenience around it.
 
 DEPENDENCIES
-it is a PHP script (>= 5.2)
+it is a PHP script (>= 5.2) (maybe apt-get install php5-cli)
 made for common linux distros (assumes some binaries in PATH)
 	rsync (the real work)
 	whoami (check for root privileges)
@@ -15,11 +15,11 @@ made for common linux distros (assumes some binaries in PATH)
 	ionice (as above)
 	mount (optional: mount the backup drive as readonly if not needed)
 currently it has some ugly dependencies (that are too specific to my system)
-	notify-send  (notify with nice popups - used in ubuntu)
+	notify-send  (notify with nice popups - used in ubuntu. apt-get install libnotify-bin)
 	tune2fs (get mount counter - mount enforces periodic fsck after n mounts of a partition)
 	e2fsck (is specific to ext partitions, if you use something else: fix it, make a pull request :)
 
 GETTING STARTED
-copy config.json-dist to config.json. adjust it to your system (be carefull, you might overwrite data).
-add a cron job calling rsync-php hourly (or less frequent).
+copy config.json-dist to config.json. adjust it to your system (the log folder needs to exist). be carefull, you might overwrite data.
+add a cron job calling rsync-php hourly (or less frequent). the remote rsync uses passwordless ssh, that needs to be configured manually.
 
