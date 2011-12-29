@@ -6,9 +6,20 @@ require_once 'RemoteRsyncBackup.php';
 
 $dir = __DIR__.DIRECTORY_SEPARATOR;
 
-$config = json_decode(file_get_contents('config.json'));
+$configFile = $dir.'config.json';
+if(!file_exists($configFile)){
+    echo "no config file found";
+    exit(1);
+}
+
+$config = json_decode(file_get_contents($configFile));
 
 $logFolder = $config->logFolder;
+if(!is_dir($logFolder) || !is_writeable($logFolder)){
+    echo "log folder not existing or not writeable";
+    exit(1);
+}
+
 $backupBase = new SystemWrapper($logFolder);
 $backupBase->notify('starting backup');
 
